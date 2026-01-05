@@ -16,6 +16,12 @@
             background: #eee;
             display: block;
             margin: 0 auto;
+
+            /* 追加 ↓ */
+            max-width: 100vw;
+            max-height: 100vh;
+            width: auto;
+            height: auto;
         }
     </style>
 </head>
@@ -95,37 +101,176 @@
         document.addEventListener("keydown", keyDownHandler, false);
         document.addEventListener("keyup", keyUpHandler, false);
 
-        function keyDownHandler(e) {
-            if (e.key === "Right" || e.key === "ArrowRight" && blocks[playerX + 1].status === 1 && fruits[playerX + 1][10].status === 0 && j == 0 && WP == 0) {
-                x += blockWigth;
-                j = 0;
-                dx = dx1;
-                playerX += 1;
-            } else if (e.key === "Right" || e.key === "ArrowRight" && WP == 0) {
-                j = 0;
-                dx = dx1;
-            }
-            if (e.key === "Left" || e.key === "ArrowLeft" && blocks[playerX - 1].status === 1 && fruits[playerX - 1][10].status === 0 && j == 1 && WP == 0 && x > (canvas.width / 13) * 2) {
-                x -= blockWigth;
-                j = 1;
-                dx = -dx1;
-                playerX -= 1;
-            } else if (e.key === "Left" || e.key === "ArrowLeft" && WP == 0) {
-                j = 1;
-                dx = -dx1;
-            }
+        canvas.addEventListener(
+            "touchstart",
+            handleTouchStart,
+            { passive: false }
+        );
+        canvas.addEventListener(
+            "touchend",
+            handleTouchEnd,
+            { passive: false }
+        );
 
-            if (e.key === " " && WP == 0) {
-                wPressed = true;
-            }
+
+        function keyDownHandler(e) {
+            if (e.key === "Right" || e.key === "ArrowRight") moveRight();
+            if (e.key === "Left" || e.key === "ArrowLeft") moveLeft();
+            if (e.key === " ") fireStart();
         }
 
+        function keyUpHandler(e) {
+            if (e.key === " ") fireEnd();
+        }
+
+
+        function moveRight() {
+            if (
+                blocks[playerX + 1].status === 1 &&
+                fruits[playerX + 1][10].status === 0 &&
+                j == 0 &&
+                WP == 0
+            ) {
+                x += blockWigth;
+                playerX++;
+            }
+            j = 0;
+            dx = dx1;
+        }
+
+        function moveLeft() {
+            if (
+                blocks[playerX - 1].status === 1 &&
+                fruits[playerX - 1][10].status === 0 &&
+                j == 1 &&
+                WP == 0 &&
+                x > (canvas.width / 13) * 2
+            ) {
+                x -= blockWigth;
+                playerX--;
+            }
+            j = 1;
+            dx = -dx1;
+        }
+
+        function fireStart() {
+            if (WP == 0) wPressed = true;
+        }
+
+        function fireEnd() {
+            wPressed = false;
+        }
 
         function keyUpHandler(e) {
             if (e.key === " ") {
                 wPressed = false;
             }
         }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            for (let t of e.touches) {
+                const xT = (t.clientX - rect.left) * scaleX;
+                const yT = (t.clientY - rect.top) * scaleY;
+
+                if (Math.hypot(xT - 80, yT - BUTTON_Y) < BUTTON_SIZE / 2) {
+                    touchLeft = true;
+                    moveLeft();
+                }
+
+                if (Math.hypot(xT - 180, yT - BUTTON_Y) < BUTTON_SIZE / 2) {
+                    touchRight = true;
+                    moveRight();
+                }
+
+                if (Math.hypot(xT - (canvas.width - 100), yT - BUTTON_Y) < BUTTON_SIZE / 2) {
+                    touchFire = true;
+                    fireStart();
+                }
+            }
+        }
+
+
+        function handleTouchEnd() {
+            touchLeft = false;
+            touchRight = false;
+            touchFire = false;
+            fireEnd();
+        }
+
+        const BUTTON_SIZE = 70;
+        const BUTTON_Y = canvas.height - BUTTON_SIZE - 100;
+
+        function drawTouchButtons() {
+            const size = BUTTON_SIZE;
+            const y = BUTTON_Y;
+
+            ctx.beginPath();
+            ctx.arc(80, y, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = touchLeft ? "#888" : "#444";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "white";
+            ctx.font = "30px Arial";
+            ctx.fillText("◀", 65, y + 10);
+
+            ctx.beginPath();
+            ctx.arc(180, y, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = touchRight ? "#888" : "#444";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "white";
+            ctx.fillText("▶", 165, y + 10);
+
+            ctx.beginPath();
+            ctx.arc(canvas.width - 100, y, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = touchFire ? "#ff6666" : "#aa3333";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "white";
+            ctx.fillText("●", canvas.width - 108, y + 10);
+        }
+
+        canvas.addEventListener("mousedown", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const xT = (e.clientX - rect.left) * scaleX;
+            const yT = (e.clientY - rect.top) * scaleY;
+
+            checkButtons(xT, yT);
+        });
+
+        canvas.addEventListener("mouseup", handleTouchEnd);
+
+        function checkButtons(xT, yT) {
+            const yButton = canvas.height - BUTTON_SIZE - 100;
+
+            if (Math.hypot(xT - 80, yT - yButton) < BUTTON_SIZE / 2) {
+                touchLeft = true;
+                moveLeft();
+            }
+
+            if (Math.hypot(xT - 180, yT - yButton) < BUTTON_SIZE / 2) {
+                touchRight = true;
+                moveRight();
+            }
+
+            if (Math.hypot(xT - (canvas.width - 100), yT - yButton) < BUTTON_SIZE / 2) {
+                touchFire = true;
+                fireStart();
+            }
+        }
+
 
         function block() {
             for (c = 1; c <= 11; c++) {
@@ -604,85 +749,6 @@
                 }
             }
         }
-
-        function drawTouchButtons() {
-            const size = 70;
-            const y = canvas.height - size - 100;
-
-            // 左
-            ctx.beginPath();
-            ctx.arc(80, y, size / 2, 0, Math.PI * 2);
-            ctx.fillStyle = touchLeft ? "#888" : "#444";
-            ctx.fill();
-            ctx.closePath();
-
-            ctx.fillStyle = "white";
-            ctx.font = "30px Arial";
-            ctx.fillText("◀", 65, y + 10);
-
-            // 右
-            ctx.beginPath();
-            ctx.arc(180, y, size / 2, 0, Math.PI * 2);
-            ctx.fillStyle = touchRight ? "#888" : "#444";
-            ctx.fill();
-            ctx.closePath();
-
-            ctx.fillStyle = "white";
-            ctx.fillText("▶", 165, y + 10);
-
-            // 発射
-            ctx.beginPath();
-            ctx.arc(canvas.width - 100, y, size / 2, 0, Math.PI * 2);
-            ctx.fillStyle = touchFire ? "#ff6666" : "#aa3333";
-            ctx.fill();
-            ctx.closePath();
-
-            ctx.fillStyle = "white";
-            ctx.fillText("●", canvas.width - 108, y + 10);
-        }
-
-        canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
-        canvas.addEventListener("touchend", handleTouchEnd);
-
-        function handleTouchStart(e) {
-            e.preventDefault();
-
-            for (let t of e.touches) {
-                const rect = canvas.getBoundingClientRect();
-                const xT = t.clientX - rect.left;
-                const yT = t.clientY - rect.top;
-
-                // 左
-                if (Math.hypot(xT - 80, yT - (canvas.height - 80)) < 35) {
-                    touchLeft = true;
-                    j = 1;
-                    dx = -dx1;
-                }
-
-                // 右
-                if (Math.hypot(xT - 180, yT - (canvas.height - 80)) < 35) {
-                    touchRight = true;
-                    j = 0;
-                    dx = dx1;
-                }
-
-                // 発射
-                if (Math.hypot(xT - (canvas.width - 100), yT - (canvas.height - 80)) < 35) {
-                    touchFire = true;
-                    wPressed = true;
-                }
-            }
-        }
-
-        function handleTouchEnd() {
-            touchLeft = false;
-            touchRight = false;
-            touchFire = false;
-            wPressed = false;
-        }
-
-
-
 
         function gameloop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
