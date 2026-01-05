@@ -1,37 +1,48 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>バード</title>
-            <style>
-      * {
-        padding: 0;
-        margin: 0;
-      }
-      canvas {
-        background: #eee;
-        display: block;
-        margin: 0 auto;
-      }
-    </style>
-    </head>
-    <body>
-        <canvas id="myCanvas" width="650" height="600"></canvas>
 
-        
-        <script>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,
+  maximum-scale=1.0, user-scalable=no">
+
+    <title>バード</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="650" height="800"></canvas>
+
+
+    <script>
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
-        const ctx2 = canvas.getContext("2d");
+
+        //const controlCanvas = document.getElementById("ControlCanvas");
+        //const ctx2 = controlCanvas.getContext("2d");
+
+        const gameScreenW = 650;
+        const gameScreenH = 600;
 
 
-        var x = canvas.width / 2;
-        var y = canvas.height - 75;
 
-        var blockWigth = canvas.width / 13;
-        var blockHight = (canvas.width / 13);
-        var dx1 = (canvas.width / 13) / 8;
-        var dy1 = -(canvas.width / 13) / 8;
+        var x = gameScreenW / 2;
+        var y = gameScreenH - 75;
+
+        var blockWigth = gameScreenW / 13;
+        var blockHight = (gameScreenH / 13);
+        var dx1 = (gameScreenW / 13) / 8;
+        var dy1 = -(gameScreenH / 13) / 8;
         var dx = dx1
         var dy = dy1
         var Sx = x;
@@ -54,25 +65,29 @@
         var blueA_score = 0;
         var goldA_score = 0;
         var scores = 0;
-        
+
+        let touchLeft = false;
+        let touchRight = false;
+        let touchFire = false;
+
 
         var blocks = [];
         var blocks_p = [];
-        for(var c = 0; c <= 11; c++){
+        for (var c = 0; c <= 11; c++) {
             blocks[c] = [];
             blocks_p[c] = [];
-            blocks[c] = { x: 0, y: 0, status: 1, break:0, break_spd:0};
-            blocks_p[c] = { x: 0, y: 0, dx: 0, dy: 0};
+            blocks[c] = { x: 0, y: 0, status: 1, break: 0, break_spd: 0 };
+            blocks_p[c] = { x: 0, y: 0, dx: 0, dy: 0 };
         }
 
         var fruits = [];
         var scores = [];
-        for(var n = 0; n <= 11; n++){
+        for (var n = 0; n <= 11; n++) {
             fruits[n] = [];
             scores[n] = [];
-            for(var m = 0; m <= 11; m++){
-            fruits[n][m] = { x: 0, y: 0, status: 0, down: 0, score: 1200, type: 0, s:0};
-            scores[n][m] = {status: 0, score: 0};
+            for (var m = 0; m <= 11; m++) {
+                fruits[n][m] = { x: 0, y: 0, status: 0, down: 0, score: 1200, type: 0, s: 0 };
+                scores[n][m] = { status: 0, score: 0 };
             }
         }
 
@@ -81,26 +96,26 @@
         document.addEventListener("keyup", keyUpHandler, false);
 
         function keyDownHandler(e) {
-            if(e.key === "Right" || e.key === "ArrowRight" && blocks[playerX + 1].status === 1 && fruits[playerX + 1][10].status === 0 && j == 0 && WP == 0) {
-            x += blockWigth;
-            j = 0;
-            dx = dx1;
-            playerX += 1;
-        } else if(e.key === "Right" || e.key === "ArrowRight" && WP == 0){
-            j = 0;
-            dx = dx1;
-        }
-            if(e.key === "Left" || e.key === "ArrowLeft" && blocks[playerX - 1].status === 1 && fruits[playerX - 1][10].status === 0 && j == 1 && WP == 0 && x > (canvas.width / 13) * 2) {
-            x -= blockWigth;
-            j = 1;
-            dx = -dx1;
-            playerX -= 1;
-        } else if(e.key === "Left" || e.key === "ArrowLeft" && WP == 0){
-            j = 1;
-            dx = -dx1;
-        }
-            
-            if(e.key === " " && WP== 0){
+            if (e.key === "Right" || e.key === "ArrowRight" && blocks[playerX + 1].status === 1 && fruits[playerX + 1][10].status === 0 && j == 0 && WP == 0) {
+                x += blockWigth;
+                j = 0;
+                dx = dx1;
+                playerX += 1;
+            } else if (e.key === "Right" || e.key === "ArrowRight" && WP == 0) {
+                j = 0;
+                dx = dx1;
+            }
+            if (e.key === "Left" || e.key === "ArrowLeft" && blocks[playerX - 1].status === 1 && fruits[playerX - 1][10].status === 0 && j == 1 && WP == 0 && x > (canvas.width / 13) * 2) {
+                x -= blockWigth;
+                j = 1;
+                dx = -dx1;
+                playerX -= 1;
+            } else if (e.key === "Left" || e.key === "ArrowLeft" && WP == 0) {
+                j = 1;
+                dx = -dx1;
+            }
+
+            if (e.key === " " && WP == 0) {
                 wPressed = true;
             }
         }
@@ -109,217 +124,211 @@
         function keyUpHandler(e) {
             if (e.key === " ") {
                 wPressed = false;
-            } 
+            }
         }
 
+        function block() {
+            for (c = 1; c <= 11; c++) {
 
-
-
-
-
-
-        function block(){   
-            for(c = 1; c <= 11; c++){
-
-                var blockX = (canvas.width / 13) * c;
-                var blockY = canvas.height - (canvas.width / 13);
+                var blockX = (gameScreenW / 13) * c;
+                var blockY = gameScreenH - (gameScreenW / 13);
                 blocks[c].x = blockX;
-                blocks[c].y = blockY; 
+                blocks[c].y = blockY;
 
-                if(blocks[c].break > 0){
+                if (blocks[c].break > 0) {
                     ctx.beginPath();
-                    ctx.rect(blockX, blockY + (100 - blocks[c].break), blockWigth/2.4, blockHight/2.3);
+                    ctx.rect(blockX, blockY + (100 - blocks[c].break), blockWigth / 2.4, blockHight / 2.3);
                     ctx.fillStyle = "#829460";
                     ctx.fill();
                     ctx.closePath();
 
                     ctx.beginPath();
-                    ctx.rect(blockX + blockWigth/2, blockY + (100 - blocks[c].break), blockWigth/1.8, blockHight/2.2);
+                    ctx.rect(blockX + blockWigth / 2, blockY + (100 - blocks[c].break), blockWigth / 1.8, blockHight / 2.2);
                     ctx.fillStyle = "#829460";
                     ctx.fill();
                     ctx.closePath();
 
                     ctx.beginPath();
-                    ctx.rect(blockX, blockY + (100 - blocks[c].break) - blockHight/2, blockWigth/2.4, blockHight/2.2);
+                    ctx.rect(blockX, blockY + (100 - blocks[c].break) - blockHight / 2, blockWigth / 2.4, blockHight / 2.2);
                     ctx.fillStyle = "#829460";
                     ctx.fill();
                     ctx.closePath();
 
                     ctx.beginPath();
-                    ctx.rect(blockX + blockWigth/2, blockY + (100 - blocks[c].break) - blockHight/1.6, blockWigth/2.2, blockHight/2.2);
+                    ctx.rect(blockX + blockWigth / 2, blockY + (100 - blocks[c].break) - blockHight / 1.6, blockWigth / 2.2, blockHight / 2.2);
                     ctx.fillStyle = "#829460";
                     ctx.fill();
                     ctx.closePath();
 
                     blocks[c].break -= blocks[c].break_spd;
                     blocks[c].break_spd += 0.3;
-                }else{
+                } else {
                     blocks[c].break_spd = 1;
                 }
 
-                if (blocks[c].status === 1){
+                if (blocks[c].status === 1) {
 
-                ctx.beginPath();
-                ctx.rect(blockX, blockY, blockWigth, blockHight);
-                ctx.fillStyle = "#829460";
-                ctx.fill();
-                ctx.closePath();
+                    ctx.beginPath();
+                    ctx.rect(blockX, blockY, blockWigth, blockHight);
+                    ctx.fillStyle = "#829460";
+                    ctx.fill();
+                    ctx.closePath();
 
-                ctx.beginPath();
-                ctx.rect(blockX, blockY, blockWigth, blockHight / 3);
-                ctx.fillStyle = "#FFE1E1";
-                ctx.fill();
-                ctx.closePath();
+                    ctx.beginPath();
+                    ctx.rect(blockX, blockY, blockWigth, blockHight / 3);
+                    ctx.fillStyle = "#FFE1E1";
+                    ctx.fill();
+                    ctx.closePath();
 
-                ctx.beginPath();
-                ctx.rect(blockX, blockY, blockWigth, blockHight);
-                ctx.strokeStyle = "#EEEEEE";
-                ctx.stroke();
-                ctx.closePath();
+                    ctx.beginPath();
+                    ctx.rect(blockX, blockY, blockWigth, blockHight);
+                    ctx.strokeStyle = "#EEEEEE";
+                    ctx.stroke();
+                    ctx.closePath();
 
                 }
-                if (blocks[c].status > 1){
-                var blockX = (canvas.width / 13) * c;
-                var blockY = canvas.height - (canvas.width / 13);
-
-                
-                blocks[c].x = blockX;
-                blocks[c].y = blockY; 
+                if (blocks[c].status > 1) {
+                    var blockX = (gameScreenW / 13) * c;
+                    var blockY = gameScreenH - (gameScreenW / 13);
 
 
-                ctx.beginPath();
-                ctx.rect(blockX, blockY - (blocks[c].status * 11), blockWigth, blockHight);
-                ctx.fillStyle = "#829460";
-                ctx.fill();
-                ctx.closePath();
-
-                ctx.beginPath();
-                ctx.rect(blockX, blockY - (blocks[c].status * 11), blockWigth, blockHight/3);
-                ctx.fillStyle = "#FFE1E1";
-                ctx.fill();
-                ctx.closePath();
+                    blocks[c].x = blockX;
+                    blocks[c].y = blockY;
 
 
+                    ctx.beginPath();
+                    ctx.rect(blockX, blockY - (blocks[c].status * 11), blockWigth, blockHight);
+                    ctx.fillStyle = "#829460";
+                    ctx.fill();
+                    ctx.closePath();
 
-                blocks[c].status -= 1;
-                if(blocks[c].status === 2){
-                    for(var g = 1 ; g <= 11; g++){
-                    if(fruits[c][g].status == 1 ){
-                        score += fruits[c][g].score;
-                        scores[c][g].status = 100;
-                    }
+                    ctx.beginPath();
+                    ctx.rect(blockX, blockY - (blocks[c].status * 11), blockWigth, blockHight / 3);
+                    ctx.fillStyle = "#FFE1E1";
+                    ctx.fill();
+                    ctx.closePath();
 
-                    fruits[c][g].status = 0;
-                    fruits[c][g].type = 0;
+
+
+                    blocks[c].status -= 1;
+                    if (blocks[c].status === 2) {
+                        for (var g = 1; g <= 11; g++) {
+                            if (fruits[c][g].status == 1) {
+                                score += fruits[c][g].score;
+                                scores[c][g].status = 100;
+                            }
+
+                            fruits[c][g].status = 0;
+                            fruits[c][g].type = 0;
+                        }
                     }
                 }
             }
-        }   
         }
 
-        function block_particle(){
+        function block_particle() {
 
-            
 
-            for(i = 0; i <=5; i++){
+
+            for (i = 0; i <= 5; i++) {
                 ctx.beginPath();
-                ctx.rect(blockX * n + blockWigth/2, blockY - blockHight/2, blockWigth/5, blockHight/5);
+                ctx.rect(blockX * n + blockWigth / 2, blockY - blockHight / 2, blockWigth / 5, blockHight / 5);
                 ctx.fillStyle = "#FFE1E1";
                 ctx.fill();
                 ctx.closePath();
 
             }
-            
+
         }
-        
-        function reblock(){
-                for(reBlocks1 = 0; reBlocks1 <= 5 && reBlock > 0; reBlocks1++){
-                    for(reBlocks2 = 1; reBlocks2 <= 2 && reBlock > 0; reBlocks2++){
-                        reBlocks1 = -reBlocks1
-                    if(blocks[6 + reBlocks1].status === 0){
+
+        function reblock() {
+            for (reBlocks1 = 0; reBlocks1 <= 5 && reBlock > 0; reBlocks1++) {
+                for (reBlocks2 = 1; reBlocks2 <= 2 && reBlock > 0; reBlocks2++) {
+                    reBlocks1 = -reBlocks1
+                    if (blocks[6 + reBlocks1].status === 0) {
 
                         blocks[6 + reBlocks1].status = 100;
                         reBlock -= 1;
 
                     }
                 }
-            }                   
-            if(reBlock > 0){
-            reBlock -= 1;
+            }
+            if (reBlock > 0) {
+                reBlock -= 1;
             }
         }
 
-        
-
-        function chara(){
 
 
-            if(wPressed) {
+        function chara() {
+
+
+            if (wPressed) {
                 Sx = x;
                 Sy = y;
-                WP += 1 ;
-                if (WP > 75){
-                WP = 75;
+                WP += 1;
+                if (WP > 75) {
+                    WP = 75;
                 }
-            }else{
+            } else {
                 Sx = x;
                 Sy = y;
-                if (WP > 0){
-                WP -= 1;
+                if (WP > 0) {
+                    WP -= 1;
                 }
             }
 
-            if(WP > 0){
-            for(u = 0; u < WP; u++){
+            if (WP > 0) {
+                for (u = 0; u < WP; u++) {
+                    ctx.beginPath();
+                    ctx.arc(Sx, Sy, blockWigth / 7, 0, Math.PI * 2);
+                    ctx.fillStyle = "pink";
+                    ctx.fill();
+                    ctx.closePath();
+
+                    Sx += dx;
+                    Sy += dy;
+                }
+            }
+
+            if (j == 0) {
                 ctx.beginPath();
-                ctx.arc(Sx, Sy, blockWigth / 7, 0, Math.PI * 2);
-                ctx.fillStyle = "pink";
+                ctx.ellipse(x + blockWigth / 2.5, y - blockWigth / 2.5, blockWigth / 6, blockWigth / 2.5, (Math.PI / 180) * 45, 0, 360);
+                ctx.fillStyle = "yellow";
                 ctx.fill();
                 ctx.closePath();
-
-                Sx += dx;
-                Sy += dy;
             }
-        }
+            if (j == 1) {
+                ctx.beginPath();
+                ctx.ellipse(x - blockWigth / 2.5, y - blockWigth / 2.5, blockWigth / 6, blockWigth / 2.5, (Math.PI / 180) * -45, 0, 360);
+                ctx.fillStyle = "yellow";
+                ctx.fill();
+                ctx.closePath();
+            }
 
-           if(j == 0){
             ctx.beginPath();
-            ctx.ellipse(x + blockWigth / 2.5, y - blockWigth / 2.5, blockWigth / 6, blockWigth / 2.5, (Math.PI / 180) * 45, 0, 360);
-            ctx.fillStyle = "yellow";
+            ctx.ellipse(x + blockWigth / 2.5, y, blockWigth / 8, blockWigth / 2.9, (Math.PI / 180) * -50, 0, 360);
+            ctx.fillStyle = "green";
             ctx.fill();
             ctx.closePath();
-           }
-           if(j == 1){
+
             ctx.beginPath();
-            ctx.ellipse(x - blockWigth / 2.5, y - blockWigth / 2.5, blockWigth / 6, blockWigth / 2.5, (Math.PI / 180) * -45, 0, 360);
-            ctx.fillStyle = "yellow";
+            ctx.ellipse(x - blockWigth / 2.5, y, blockWigth / 8, blockWigth / 2.9, (Math.PI / 180) * 50, 0, 360);
+            ctx.fillStyle = "green";
             ctx.fill();
             ctx.closePath();
-           }
-
-           ctx.beginPath();
-           ctx.ellipse(x + blockWigth / 2.5, y, blockWigth / 8, blockWigth / 2.9, (Math.PI / 180) * -50, 0, 360);
-            ctx.fillStyle = "green";
-            ctx.fill();
-            ctx.closePath(); 
 
             ctx.beginPath();
-           ctx.ellipse(x - blockWigth / 2.5, y, blockWigth / 8, blockWigth / 2.9, (Math.PI / 180) * 50, 0, 360);
+            ctx.ellipse(x, y + 2, blockWigth / 2, blockHight / 2.2, 0, 0, 360);
             ctx.fillStyle = "green";
             ctx.fill();
-            ctx.closePath(); 
-
-           ctx.beginPath();
-            ctx.ellipse(x, y + 2, blockWigth / 2, blockHight/ 2.2 , 0, 0, 360);
-            ctx.fillStyle = "green";
-            ctx.fill();
-            ctx.closePath(); 
+            ctx.closePath();
 
             ctx.beginPath();
-            ctx.ellipse(x, y + blockWigth / 8, blockWigth / 3, blockHight/ 3 , 0, 0, 360);
+            ctx.ellipse(x, y + blockWigth / 8, blockWigth / 3, blockHight / 3, 0, 0, 360);
             ctx.fillStyle = "#006600";
             ctx.fill();
-            ctx.closePath(); 
+            ctx.closePath();
 
             ctx.beginPath();
             ctx.arc(x + 8, y - 20, blockWigth / 6, 0, Math.PI * 2);
@@ -348,110 +357,107 @@
 
 
 
-        function fruit(){
+        function fruit() {
+            for (n = 1; n <= 11; n++) {
+                for (m = 1; m <= 11; m++) {
+                    if (fruits[n][m].status === 1) {
+                        var fruitX = (gameScreenW / 13) * n + (gameScreenW / 13) / 2;
+                        var fruitY = (gameScreenW / 13) * m + (gameScreenW / 13) / 2;
+                        fruits[n][m].x = fruitX;
+                        fruits[n][m].Y = fruitY;
+                        if (fruits[n][m].type === 0) {
+                            ctx.beginPath();
+                            ctx.arc(fruitX, fruitY, blockWigth / 3, 0, Math.PI * 2);
+                            ctx.fillStyle = "#FF7F3F";
+                            ctx.fill();
+                            ctx.closePath();
 
+                            ctx.beginPath();
+                            ctx.arc(fruitX + 6, fruitY - 7, blockWigth / 10, 0, Math.PI * 2);
+                            ctx.fillStyle = "white";
+                            ctx.fill();
+                            ctx.closePath();
 
-            
-            for( n = 1; n <= 11; n++){
-                for( m = 1; m <= 11; m++){
-                if(fruits[n][m].status === 1){
-                var fruitX = (canvas.width / 13) * n + (canvas.width / 13) / 2;
-                var fruitY = (canvas.width / 13) * m + (canvas.width / 13) / 2;
-                fruits[n][m].x = fruitX;
-                fruits[n][m].Y = fruitY;
-                if(fruits[n][m].type === 0){
-                ctx.beginPath();
-                ctx.arc(fruitX, fruitY, blockWigth / 3, 0, Math.PI * 2);
-                ctx.fillStyle = "#FF7F3F"; 
-                ctx.fill();
-                ctx.closePath();
+                            ctx.beginPath();
+                            ctx.rect(fruitX + 1.5, fruitY - 5, -3, -15);
+                            ctx.fillStyle = "black";
+                            ctx.fill();
+                            ctx.closePath();
+                        }
 
-                ctx.beginPath();
-                ctx.arc(fruitX + 6, fruitY - 7, blockWigth / 10, 0, Math.PI * 2);
-                ctx.fillStyle = "white";
-                ctx.fill();
-                ctx.closePath();
+                        if (fruits[n][m].type === 1) {
+                            ctx.beginPath();
+                            ctx.arc(fruitX, fruitY, blockWigth / 3, 0, Math.PI * 2);
+                            ctx.fillStyle = "#AAC8A7";
+                            ctx.fill();
+                            ctx.closePath();
 
-                ctx.beginPath();
-                ctx.rect(fruitX + 1.5, fruitY - 5, -3, -15);
-                ctx.fillStyle = "black";
-                ctx.fill();
-                ctx.closePath();
-                }
+                            ctx.beginPath();
+                            ctx.arc(fruitX + 6, fruitY - 7, blockWigth / 10, 0, Math.PI * 2);
+                            ctx.fillStyle = "white";
+                            ctx.fill();
+                            ctx.closePath();
 
-                if(fruits[n][m].type === 1){
-                ctx.beginPath();
-                ctx.arc(fruitX, fruitY, blockWigth / 3, 0, Math.PI * 2);
-                ctx.fillStyle = "#AAC8A7";
-                ctx.fill();
-                ctx.closePath();
+                            ctx.beginPath();
+                            ctx.rect(fruitX + 1.5, fruitY - 5, -3, -15);
+                            ctx.fillStyle = "black";
+                            ctx.fill();
+                            ctx.closePath();
+                        }
 
-                ctx.beginPath();
-                ctx.arc(fruitX + 6, fruitY - 7, blockWigth / 10, 0, Math.PI * 2);
-                ctx.fillStyle = "white";
-                ctx.fill();
-                ctx.closePath();
+                        if (fruits[n][m].type === 2) {
+                            ctx.beginPath();
+                            ctx.arc(fruitX, fruitY, blockWigth / 3, 0, Math.PI * 2);
+                            ctx.fillStyle = "#FBDF07";
+                            ctx.fill();
+                            ctx.closePath();
 
-                ctx.beginPath();
-                ctx.rect(fruitX + 1.5, fruitY - 5, -3, -15);
-                ctx.fillStyle = "black";
-                ctx.fill();
-                ctx.closePath();
-                }
+                            ctx.beginPath();
+                            ctx.arc(fruitX + 6, fruitY - 7, blockWigth / 10, 0, Math.PI * 2);
+                            ctx.fillStyle = "white";
+                            ctx.fill();
+                            ctx.closePath();
 
-                if(fruits[n][m].type === 2){
-                ctx.beginPath();
-                ctx.arc(fruitX, fruitY, blockWigth / 3, 0, Math.PI * 2);
-                ctx.fillStyle = "#FBDF07";
-                ctx.fill();
-                ctx.closePath();
-
-                ctx.beginPath();
-                ctx.arc(fruitX + 6, fruitY - 7, blockWigth / 10, 0, Math.PI * 2);
-                ctx.fillStyle = "white";
-                ctx.fill();
-                ctx.closePath();
-
-                ctx.beginPath();
-                ctx.rect(fruitX + 1.5, fruitY - 5, -3, -15);
-                ctx.fillStyle = "black";
-                ctx.fill();
-                ctx.closePath();
-                }
+                            ctx.beginPath();
+                            ctx.rect(fruitX + 1.5, fruitY - 5, -3, -15);
+                            ctx.fillStyle = "black";
+                            ctx.fill();
+                            ctx.closePath();
+                        }
                     }
                 }
             }
-         }
-         
-        
+        }
+
+
         function collisionDetection() {
 
             var score2
             score2 = (Math.floor(score / 1000)) * 10
 
-            if(score2 > 150){
+            if (score2 > 150) {
                 score2 = 150;
             }
 
-            
+
 
             fruits_tick += 1;
             var fruits_speed = 0
-            if(fruits_tick >= ( 150 - (Math.floor(score / 1000)))){
+            if (fruits_tick >= (150 - (Math.floor(score / 1000)))) {
                 fruitsrandom = (Math.floor(Math.random() * (12 - 1) + 1));
 
-                if(fruits[fruitsrandom][1].status === 1){
-                    fruits_tick == 0; 
-                }else{
-                fruits[fruitsrandom][1].status = 1;
-                fruits[fruitsrandom][1].type = 0;
+                if (fruits[fruitsrandom][1].status === 1) {
+                    fruits_tick == 0;
+                } else {
+                    fruits[fruitsrandom][1].status = 1;
+                    fruits[fruitsrandom][1].type = 0;
 
-                fruits[fruitsrandom][1].down = 99;
-                fruits_tick = 0;
+                    fruits[fruitsrandom][1].down = 99;
+                    fruits_tick = 0;
                 }
             }
 
-            if(blueA > 0){
+            if (blueA > 0) {
                 fruitsrandom = (Math.floor(Math.random() * (12 - 1) + 1));
                 fruits[fruitsrandom][1].status = 1;
                 fruits[fruitsrandom][1].type = 1;
@@ -460,7 +466,7 @@
                 blueA -= 1
             }
 
-            if(goldA > 0){
+            if (goldA > 0) {
                 fruitsrandom = (Math.floor(Math.random() * (12 - 1) + 1));
                 fruits[fruitsrandom][1].status = 1;
                 fruits[fruitsrandom][1].type = 2;
@@ -468,113 +474,113 @@
                 fruits[fruitsrandom][1].down = 99;
                 goldA -= 1
             }
-        
+
 
             for (let n = 1; n <= 11; n++) {
-            for (let m = 1; m <= 11; m++) {
-            const b = fruits[n][m];
-            if(b.status === 1){
-                    fruits[n][2].score = 1200;
-                    fruits[n][2].score = 1200;
-                    fruits[n][3].score = 1000;
-                    fruits[n][4].score = 1000;
-                    fruits[n][5].score = 500;
-                    fruits[n][6].score = 500;
-                    fruits[n][7].score = 300;
-                    fruits[n][8].score = 300;
-                    fruits[n][9].score = 100;
-                    fruits[n][10].score = 100;
-                    fruits[n][11].score = 0;
+                for (let m = 1; m <= 11; m++) {
+                    const b = fruits[n][m];
+                    if (b.status === 1) {
+                        fruits[n][2].score = 1200;
+                        fruits[n][2].score = 1200;
+                        fruits[n][3].score = 1000;
+                        fruits[n][4].score = 1000;
+                        fruits[n][5].score = 500;
+                        fruits[n][6].score = 500;
+                        fruits[n][7].score = 300;
+                        fruits[n][8].score = 300;
+                        fruits[n][9].score = 100;
+                        fruits[n][10].score = 100;
+                        fruits[n][11].score = 0;
 
-                if(
-                    Sx > (canvas.width / 13) * n &&
-                    Sx < (canvas.width / 13) * n + (canvas.width / 13) &&
-                    Sy >(canvas.width / 13) * m &&
-                    Sy <(canvas.width / 13) * m + (canvas.width / 13)
-                ){
-                    b.status = 0;
-                    scores[n][m].status = 100;
-                    score += b.score;
-                    blueA_score += b.score
-                    goldA_score += b.score
+                        if (
+                            Sx > (gameScreenW / 13) * n &&
+                            Sx < (gameScreenW / 13) * n + (gameScreenW / 13) &&
+                            Sy > (gameScreenW / 13) * m &&
+                            Sy < (gameScreenW / 13) * m + (gameScreenW / 13)
+                        ) {
+                            b.status = 0;
+                            scores[n][m].status = 100;
+                            score += b.score;
+                            blueA_score += b.score
+                            goldA_score += b.score
 
-                    if(blueA_score >= 3000){
-                        blueA += 1;
-                        blueA_score -= 3000
+                            if (blueA_score >= 3000) {
+                                blueA += 1;
+                                blueA_score -= 3000
+                            }
+
+
+                            if (goldA_score >= 10000) {
+                                goldA += 1;
+                                goldA_score -= 10000
+                            }
+
+                            if (b.type == 1) {
+                                reBlock += 1;
+                            }
+                            if (b.type == 2) {
+                                reBlock += 6;
+                            }
+                            b.type = 0;
+                        }
+
+                        fruitsdawn_speed = score / 1000
+                        if (fruitsdawn_speed > 50) {
+                            fruitsdawn_speed = 50
+                        }
+                        fruits[n][m].down += 1;
+                        if (fruits[n][m].down >= 100 - fruitsdawn_speed) {
+                            fruits[n][m].status = 0;
+                            fruits[n][m + 1].status = 1;
+                            fruits[n][m].down = 0;
+                            if (fruits[n][m].type === 1) {
+                                fruits[n][m + 1].type = 1;
+                            }
+
+                            if (fruits[n][m].type === 2) {
+                                fruits[n][m + 1].type = 2;
+                            }
+                            fruits[n][m].type = 0;
+                        }
+                        if (m == 10 && n == playerX) {
+
+                            alert(`GAME OVER \n 最終スコア: ${score}`);
+                            document.location.reload();
+                            clearInterval(interval);
+                        }
+                        if (m == 11) {
+                            if (blocks[n].status == 1) {
+                                blocks[n].break = 100;
+                            }
+                            blocks[n].status = 0;
+                            fruits[n][11].status = 0;
+                        }
                     }
-
-                    
-                    if(goldA_score >= 10000){
-                        goldA += 1;
-                        goldA_score -= 10000
-                    }
-
-                    if(b.type == 1){
-                        reBlock += 1;
-                    }
-                    if(b.type == 2){
-                        reBlock += 6;
-                    }
-                    b.type = 0;
                 }
-            
-            fruitsdawn_speed = score/1000
-            if(fruitsdawn_speed > 50){
-                fruitsdawn_speed = 50
-            }
-            fruits[n][m].down += 1;
-            if(fruits[n][m].down >= 100 - fruitsdawn_speed){
-                fruits[n][m].status = 0;
-                fruits[n][m + 1].status = 1;
-                fruits[n][m].down = 0;
-                if(fruits[n][m].type === 1){
-                    fruits[n][m + 1].type = 1;
-                }
-
-                if(fruits[n][m].type === 2){
-                    fruits[n][m + 1].type = 2;
-                }
-                fruits[n][m].type = 0;
-            }
-            if(m == 10 && n == playerX){
-
-                alert(`GAME OVER \n 最終スコア: ${score}`);
-                document.location.reload();
-                clearInterval(interval);
-            }
-            if(m == 11){
-                if(blocks[n].status == 1){
-                    blocks[n].break = 100;
-                }
-                blocks[n].status = 0;
-                fruits[n][11].status = 0;
             }
         }
-    }
-  }
-}
 
 
-                function drawScore() {
+        function drawScore() {
 
-                ctx.beginPath();
-                ctx.rect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "#164863";
-                ctx.fill();
-                ctx.closePath();
+            ctx.beginPath();
+            ctx.rect(0, 0, gameScreenW, gameScreenH);
+            ctx.fillStyle = "#164863";
+            ctx.fill();
+            ctx.closePath();
 
-                ctx.beginPath();
-                ctx.rect(0, 0, canvas.width, 35);
-                ctx.fillStyle = "#071952";
-                ctx.fill();
-                ctx.closePath();
-                
-                ctx.font = "30px Arial";
-                ctx.fillStyle = "white";
-                ctx.fillText(`SCORE:${score}pt`, 8, 30);
+            ctx.beginPath();
+            ctx.rect(0, 0, gameScreenW, 35);
+            ctx.fillStyle = "#071952";
+            ctx.fill();
+            ctx.closePath();
 
-                for(var n = 1; n <= 11; n++){
-                for(var m = 1; m <= 11; m++){
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText(`SCORE:${score}pt`, 8, 30);
+
+            for (var n = 1; n <= 11; n++) {
+                for (var m = 1; m <= 11; m++) {
 
                     scores[n][2].score = 1200;
                     scores[n][2].score = 1200;
@@ -587,22 +593,98 @@
                     scores[n][9].score = 100;
                     scores[n][10].score = 100;
                     scores[n][11].score = 50;
-                    
-                
-                    if(scores[n][m].status > 0){
-                ctx.fillStyle = "white";
-                ctx.font = "15px Arial";
-                ctx.fillText(`${scores[n][m].score}`,(canvas.width / 13) * n + 15, (canvas.width / 13) * m + 20);
+
+
+                    if (scores[n][m].status > 0) {
+                        ctx.fillStyle = "white";
+                        ctx.font = "15px Arial";
+                        ctx.fillText(`${scores[n][m].score}`, (gameScreenW / 13) * n + 15, (gameScreenW / 13) * m + 20);
                     }
                     scores[n][m].status -= 1
                 }
             }
+        }
 
+        function drawTouchButtons() {
+            const size = 70;
+            const y = canvas.height - size - 100;
 
+            // 左
+            ctx.beginPath();
+            ctx.arc(80, y, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = touchLeft ? "#888" : "#444";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "white";
+            ctx.font = "30px Arial";
+            ctx.fillText("◀", 65, y + 10);
+
+            // 右
+            ctx.beginPath();
+            ctx.arc(180, y, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = touchRight ? "#888" : "#444";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "white";
+            ctx.fillText("▶", 165, y + 10);
+
+            // 発射
+            ctx.beginPath();
+            ctx.arc(canvas.width - 100, y, size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = touchFire ? "#ff6666" : "#aa3333";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "white";
+            ctx.fillText("●", canvas.width - 108, y + 10);
+        }
+
+        canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
+        canvas.addEventListener("touchend", handleTouchEnd);
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+
+            for (let t of e.touches) {
+                const rect = canvas.getBoundingClientRect();
+                const xT = t.clientX - rect.left;
+                const yT = t.clientY - rect.top;
+
+                // 左
+                if (Math.hypot(xT - 80, yT - (canvas.height - 80)) < 35) {
+                    touchLeft = true;
+                    j = 1;
+                    dx = -dx1;
                 }
 
+                // 右
+                if (Math.hypot(xT - 180, yT - (canvas.height - 80)) < 35) {
+                    touchRight = true;
+                    j = 0;
+                    dx = dx1;
+                }
 
-            function gameloop(){
+                // 発射
+                if (Math.hypot(xT - (canvas.width - 100), yT - (canvas.height - 80)) < 35) {
+                    touchFire = true;
+                    wPressed = true;
+                }
+            }
+        }
+
+        function handleTouchEnd() {
+            touchLeft = false;
+            touchRight = false;
+            touchFire = false;
+            wPressed = false;
+        }
+
+
+
+
+        function gameloop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawScore();
             block();
@@ -611,11 +693,7 @@
             collisionDetection();
             reblock();
 
-
-
-            
-
-
+            drawTouchButtons();
         }
 
 
@@ -627,6 +705,7 @@
 
 
 
-        </script>
-    </body>
+    </script>
+</body>
+
 </html>
