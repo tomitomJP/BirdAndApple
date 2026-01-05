@@ -125,6 +125,7 @@
 
 
         function moveRight() {
+            if (WP != 0) return;
             if (
                 blocks[playerX + 1].status === 1 &&
                 fruits[playerX + 1][10].status === 0 &&
@@ -139,6 +140,7 @@
         }
 
         function moveLeft() {
+            if (WP != 0) return;
             if (
                 blocks[playerX - 1].status === 1 &&
                 fruits[playerX - 1][10].status === 0 &&
@@ -183,7 +185,7 @@
                     moveLeft();
                 }
 
-                if (Math.hypot(xT - 180, yT - BUTTON_Y) < BUTTON_SIZE / 2) {
+                if (Math.hypot(xT - 240, yT - BUTTON_Y) < BUTTON_SIZE / 2) {
                     touchRight = true;
                     moveRight();
                 }
@@ -203,8 +205,8 @@
             fireEnd();
         }
 
-        const BUTTON_SIZE = 70;
-        const BUTTON_Y = canvas.height - BUTTON_SIZE - 100;
+        const BUTTON_SIZE = 120;
+        const BUTTON_Y = canvas.height - BUTTON_SIZE;
 
         function drawTouchButtons() {
             const size = BUTTON_SIZE;
@@ -221,13 +223,13 @@
             ctx.fillText("◀", 65, y + 10);
 
             ctx.beginPath();
-            ctx.arc(180, y, size / 2, 0, Math.PI * 2);
+            ctx.arc(240, y, size / 2, 0, Math.PI * 2);
             ctx.fillStyle = touchRight ? "#888" : "#444";
             ctx.fill();
             ctx.closePath();
 
             ctx.fillStyle = "white";
-            ctx.fillText("▶", 165, y + 10);
+            ctx.fillText("▶", 240, y + 10);
 
             ctx.beginPath();
             ctx.arc(canvas.width - 100, y, size / 2, 0, Math.PI * 2);
@@ -260,7 +262,7 @@
                 moveLeft();
             }
 
-            if (Math.hypot(xT - 180, yT - yButton) < BUTTON_SIZE / 2) {
+            if (Math.hypot(xT - 240, yT - yButton) < BUTTON_SIZE / 2) {
                 touchRight = true;
                 moveRight();
             }
