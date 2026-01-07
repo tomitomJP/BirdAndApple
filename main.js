@@ -86,6 +86,8 @@ function keyDownHandler(e) {
     if (gameOver) return;
     if (e.key === "Right" || e.key === "ArrowRight") moveRight();
     if (e.key === "Left" || e.key === "ArrowLeft") moveLeft();
+    if (e.key === "R" || e.key === "r") document.location.reload();
+
     if (e.key === " ") fireStart();
 }
 
