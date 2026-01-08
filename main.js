@@ -1,3 +1,30 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    limit,
+    getDocs,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+// Firebase設定
+const firebaseConfig = {
+    apiKey: "AIzaSyAMQ9QU-SVDcDvF09LFm4rxe2md3RleOh0",
+    authDomain: "birdandapple-cd970.firebaseapp.com",
+    projectId: "birdandapple-cd970",
+    storageBucket: "birdandapple-cd970.firebasestorage.app",
+    messagingSenderId: "957825107412",
+    appId: "1:957825107412:web:325fd57d00ab6810290241"
+};
+
+// 🔥 ここで確実に初期化
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -44,6 +71,7 @@ let touchRight = false;
 let touchFire = false;
 let touchRestart = false;
 var gameOver = false;
+var playTime = 0;
 
 
 var blocks = [];
@@ -91,13 +119,16 @@ function keyDownHandler(e) {
     }
     if (e.key === "Right" || e.key === "ArrowRight") moveRight();
     if (e.key === "Left" || e.key === "ArrowLeft") moveLeft();
-    
+
     if (e.key === " ") fireStart();
 }
 
 function keyUpHandler(e) {
-    if (e.key === " ") fireEnd();
+    if (e.key === " ") {
+        wPressed = false;
+    }
 }
+
 
 
 function moveRight() {
@@ -137,12 +168,6 @@ function fireStart() {
 
 function fireEnd() {
     wPressed = false;
-}
-
-function keyUpHandler(e) {
-    if (e.key === " ") {
-        wPressed = false;
-    }
 }
 
 function handleTouchStart(e) {
@@ -793,7 +818,10 @@ function gameloop() {
     block();
     chara();
     fruit();
-    if (!gameOver) collisionDetection();
+    if (!gameOver) {
+        collisionDetection();
+        playTime += 10 / 1000;
+    }
     reblock();
 
     if (gameOver) {
@@ -805,13 +833,17 @@ function gameloop() {
 
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
-        ctx.font = "bold 80px Arial";
-        ctx.fillText(`記録 ${Math.floor(score)}ポイント`, canvas.width / 2, canvas.height / 2);
+        ctx.font = "bold 50px Arial";
+        ctx.fillText(`記録`, canvas.width / 2, 50);
+        ctx.fillText(`\n${Math.floor(score)}ポイント`, canvas.width / 2, 110);
+
         ctx.textAlign = "left";
 
         if (!deadAnimFall) {
             deadAnimFallSpd -= 4;
             deadAnimFall = true;
+            sendScore(score, playTime);
+            loadRanking();
         }
 
         if (Math.abs(deadAnimFallSpd) < 0.3) {
@@ -820,20 +852,83 @@ function gameloop() {
             deadAnimFallSpd += 0.2;
         }
         y += deadAnimFallSpd;
-        /* if (score > high_score) {
-             high_score = score;
-             high_score = Math.floor(high_score)
-             localStorage.setItem(`high_score`, `${score}`)
- 
-             ctx.font = "50px Arial";
-             ctx.fillText(`ハイスコア更新`, canvas.width / 2, canvas.height / 2 + 100);
- 
-         } else {
-             ctx.font = "50px Arial";
-             ctx.fillText(`ハイスコア ${high_score}M`, canvas.width / 2, canvas.height / 2 + 100);
-         }*/
+        showRanking();
     }
-
     drawTouchButtons();
 }
+
+async function sendScore(scoreValue, playTimeValue) {
+    await addDoc(collection(db, "scores"), {
+        score: Math.floor(scoreValue),
+        playTime: Math.floor(playTimeValue),
+        createdAt: serverTimestamp()
+    });
+}
+
+async function loadRanking() {
+    const q = query(
+        collection(db, "scores"),
+        orderBy("score", "desc"),
+        limit(10)
+    );
+
+    snap = await getDocs(q);
+    result = await getMyRank(score);
+
+}
+
+let snap;
+function showRanking() {
+    if (snap == null) return;
+    var rank = 1;
+    snap.forEach(doc => {
+        const data = doc.data();   // ← これ重要
+        const score = data.score;
+
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.font = "25px Arial";
+
+        ctx.fillText(
+            `${rank}位 ${score}ポイント`,
+            canvas.width / 2,
+            150 + ((rank - 1) * 30)
+        );
+
+        ctx.font = "60px Arial";
+        ctx.fillText(
+            `${result.rank}位/${result.total}位 `,
+            canvas.width / 2,
+            500
+        );
+
+        rank++;
+    });
+}
+let result;
+async function getMyRank(myScore) {
+    const q = query(
+        collection(db, "scores"),
+        orderBy("score", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    let rank = 1;
+
+    snap.forEach(doc => {
+        const data = doc.data();
+        if (data.score > myScore) {
+            rank++;
+        }
+    });
+
+    return {
+        rank,
+        total: snap.size
+    };
+}
+
+
+
 const GL = setInterval(gameloop, 10);
