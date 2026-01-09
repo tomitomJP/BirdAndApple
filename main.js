@@ -216,8 +216,8 @@ function handleTouchEnd() {
     fireEnd();
 }
 
-const BUTTON_SIZE = 120;
-const BUTTON_Y = canvas.height - BUTTON_SIZE;
+const BUTTON_SIZE = 140;
+const BUTTON_Y = canvas.height - (BUTTON_SIZE / 2);
 
 function drawTouchButtons() {
     const size = BUTTON_SIZE;
